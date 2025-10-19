@@ -34,21 +34,33 @@ def choose_recipes(menu_dict):
             selected_recipes.append(list(menu_dict.keys())[int(num) - 1])
     return selected_recipes
 
-def make_grocery_list(menu_dict):
-    grocery_list = set()
-    for ingredients in menu_dict.values():
-        grocery_list.update(ingredients)
-    return grocery_list
+def check_ingredients(menu_dict, selected_recipes):
+    # For each selected recipe, ask if the user has the ingredients
+    grocery_items = set()
+    for recipe in selected_recipes:
+        print(f"\nChecking ingredients for '{recipe}':")
+        for ingredient in menu_dict[recipe]:
+            have_it = input(f"Do you have '{ingredient}'? (y/n): ").lower()
+            if have_it != 'y':
+                grocery_items.add(ingredient)
+    return sorted(grocery_items)
 
 def display_grocery_list(grocery_list):
-    print("Grocery List:")
-    for item in sorted(grocery_list):
-        print(item)
+    # Display the final grocery list without duplicates
+    print("\nGrocery List:")
+    if grocery_list:
+        for item in grocery_list:
+            print(f"- {item}")
+    else:
+        print("You already have everything you need!")
+
 
 def save_grocery_list_to_file(grocery_list, file_name):
+    # Save the grocery list to an external file
     with open(file_name, 'w') as file:
-        for item in sorted(grocery_list):
+        for item in grocery_list:
             file.write(item + '\n')
+    print(f"\nGrocery list saved to '{file_name}'.")
 
 # Convert menu.txt to dictionary
 menu_file = "menu.txt"
