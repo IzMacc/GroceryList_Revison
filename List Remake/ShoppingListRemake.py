@@ -6,12 +6,26 @@ Created on Sun Oct 19 18:21:44 2025
 """
 
 
+# Grocery list program with menu file and ingredient amounts
+def load_menu(filename):
+    menu = {}
+    try:
+        with open(filename, 'r') as file:
+            for line in file:
+                if ':' in line:
+                    recipe, ingredients = line.strip().split(':', 1)
+                    ingredient_list = [i.strip() for i in ingredients.split(',')]
+                    menu[recipe.strip()] = ingredient_list
+    except FileNotFoundError:
+        print(f"Warning: {filename} not found. Using embedded menu instead.")
+    return menu
+
 # Embedded menu as a dictionary
-menu_dict = {
-    "Pasta": ["noodles", "tomato sauce", "cheese", "Basil", "meatballs"],
-    "Salad": ["lettuce", "tomato", "cucumber", "dressing"],
-    "Tacos": ["tortillas", "beef", "cheese", "salsa", "lettuce"],
-    "Sandwich": ["bread", "ham", "cheese", "lettuce", "tomato"]
+embedded_menu = {
+    "Pasta": ["200g noodles", "150ml tomato sauce", "50g cheese", "5g Basil", "100g meatballs"],
+    "Salad": ["100g lettuce", "50g tomato", "50g cucumber", "30ml dressing"],
+    "Tacos": ["3 tortillas", "200g beef", "50g cheese", "50g salsa", "30g lettuce"],
+    "Sandwich": ["2 slices bread", "50g ham", "50g cheese", "20g lettuce", "30g tomato"]
 }
 
 # Show the user all available recipes
@@ -34,25 +48,36 @@ def choose_recipes(menu):
                 chosen.append(recipe)
     return chosen
 
-# Ask if user has each ingredient; collect missing ones
+# Ask if user has each ingredient; collect missing ones (with amounts)
 def check_ingredients(menu, chosen_recipes):
     grocery_list = []
     for recipe in chosen_recipes:
         print(f"\nChecking ingredients for {recipe}:")
         for ingredient in menu[recipe]:
             while True:
-                have_it = input(f"Do you have {ingredient}? (y/n): ").strip().lower()
+                have_it = input(f"Do you have '{ingredient}'? (y/n): ").strip().lower()
                 if have_it in ['y', 'n']:
                     break
                 else:
                     print("Please enter 'y' or 'n'.")
-            if have_it != 'y':
+            
+            if have_it == 'y':
+                # Ask if they have enough
+                while True:
+                    enough = input(f"Do you have enough of '{ingredient}'? (y/n): ").strip().lower()
+                    if enough in ['y', 'n']:
+                        break
+                    else:
+                        print("Please enter 'y' or 'n'.")
+                if enough == 'n':
+                    grocery_list.append(ingredient)
+            else:
                 grocery_list.append(ingredient)
     return grocery_list
 
 # Remove duplicates from grocery list
 def remove_duplicates(grocery_list):
-    return list(set(grocery_list))
+    return list(dict.fromkeys(grocery_list)) 
 
 # Show the grocery list to the user
 def show_grocery_list(grocery_list):
@@ -75,6 +100,12 @@ def save_grocery_list(filename, grocery_list):
 
 # Main program flow
 def main():
+    menu_file = "menu.txt"
+    menu_dict = load_menu(menu_file)
+
+    if not menu_dict:
+        menu_dict = embedded_menu
+
     chosen_recipes = choose_recipes(menu_dict)
     if not chosen_recipes:
         print("No recipes selected.")
